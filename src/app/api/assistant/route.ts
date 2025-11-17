@@ -2,7 +2,13 @@ import { NextResponse } from 'next/server';
 import { createRouteSupabaseClient } from '@/lib/supabaseServer';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openaiApiKey = process.env.OPENAI_API_KEY;
+
+if (!openaiApiKey) {
+  throw new Error('Missing OPENAI_API_KEY environment variable.');
+}
+
+const openai = new OpenAI({ apiKey: openaiApiKey });
 
 interface AssistantRequest {
   message: string;
