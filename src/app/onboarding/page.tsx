@@ -12,17 +12,35 @@ export default function OnboardingPage() {
   const [usageIntent, setUsageIntent] = useState<UsageIntent>(null);
   const [language, setLanguage] = useState<LanguagePreference>('en');
   const [understood, setUnderstood] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const nextStep = () => setStep((s) => s + 1);
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   const handleFinish = async () => {
-    await fetch('/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ language_preference: language }),
-    });
-    router.push('/home');
+    setSaving(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language_preference: language }),
+      });
+
+      if (!res.ok) {
+        setError('Unable to save your preferences right now. Please try again.');
+        return;
+      }
+
+      router.push('/home');
+    } catch (err) {
+      console.error('Onboarding save failed', err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -122,9 +140,11 @@ export default function OnboardingPage() {
             disabled={(step === 1 && !usageIntent) || (step === 3 && !understood)}
             className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-60"
           >
-            {step === 3 ? 'Continue to home' : 'Next'}
+            {step === 3 ? (saving ? 'Saving…' : 'Continue to home') : 'Next'}
           </button>
         </div>
+
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
     </main>
   );
