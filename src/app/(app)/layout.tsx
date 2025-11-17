@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ReactNode } from 'react';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
+import type { Route } from 'next';
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
 const navItems = [
   { href: '/home', label: 'Home' },
@@ -11,7 +15,7 @@ const navItems = [
   { href: '/settings', label: 'Settings' },
   { href: '/help', label: 'Help' },
   { href: '/sources', label: 'Sources' },
-];
+] satisfies { href: Route; label: string }[];
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const supabase = createServerSupabaseClient();
@@ -22,7 +26,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   if (!user) redirect('/auth');
 
   const { data: profile } = await supabase.from('profiles').select('name').eq('id', user.id).maybeSingle();
-  const displayName = profile?.name || user.email || 'Friend';
+  const profileRow = profile as ProfileRow | null;
+  const displayName = profileRow?.name || user.email || 'Friend';
 
   return (
     <div className="space-y-8">

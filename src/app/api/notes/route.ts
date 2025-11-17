@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
+
+type NoteInsert = Database['public']['Tables']['notes']['Insert'];
 
 export async function POST(request: Request) {
   const supabase = createRouteSupabaseClient();
+  const supabaseUnsafe = supabase as any;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -15,7 +19,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  const { error } = await supabase.from('notes').insert({ user_id: user.id, hadith_id: hadithId, content });
+  const notePayload: NoteInsert = { user_id: user.id, hadith_id: hadithId, content };
+  const { error } = await supabaseUnsafe.from('notes').insert(notePayload);
   if (error) return NextResponse.json({ error: 'Unable to save note' }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

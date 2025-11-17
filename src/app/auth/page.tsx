@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { supabaseClient } from '@/lib/supabaseClient';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
@@ -19,10 +19,12 @@ export default function AuthPage() {
 
     try {
       let result;
+      const supabase = getSupabaseClient();
+
       if (mode === 'sign-in') {
-        result = await supabaseClient.auth.signInWithPassword({ email, password });
+        result = await supabase.auth.signInWithPassword({ email, password });
       } else {
-        result = await supabaseClient.auth.signUp({ email, password });
+        result = await supabase.auth.signUp({ email, password });
       }
 
       if (result.error) {

@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createRouteSupabaseClient } from '@/lib/supabaseServer';
 import OpenAI from 'openai';
+import type { Database } from '@/types/supabase';
 
-const openaiApiKey = process.env.OPENAI_API_KEY;
-
-if (!openaiApiKey) {
-  throw new Error('Missing OPENAI_API_KEY environment variable.');
-}
-
-const openai = new OpenAI({ apiKey: openaiApiKey });
+const getOpenAI = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY environment variable.');
+  }
+  return new OpenAI({ apiKey });
+};
 
 interface AssistantRequest {
   message: string;
@@ -16,8 +17,14 @@ interface AssistantRequest {
   sessionId?: string;
 }
 
+type AiSessionInsert = Database['public']['Tables']['ai_sessions']['Insert'];
+type AiMessageInsert = Database['public']['Tables']['ai_messages']['Insert'];
+type AiMessageRow = Database['public']['Tables']['ai_messages']['Row'];
+type HadithRow = Database['public']['Tables']['hadith']['Row'];
+
 export async function POST(request: Request) {
   const supabase = createRouteSupabaseClient();
+  const supabaseUnsafe = supabase as any;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -28,20 +35,25 @@ export async function POST(request: Request) {
 
   let sessionId = body.sessionId || null;
   if (!sessionId) {
-    const { data: newSession } = await supabase
+    const sessionPayload: AiSessionInsert = { user_id: user.id };
+    const { data: newSession } = await supabaseUnsafe
       .from('ai_sessions')
-      .insert({ user_id: user.id })
+      .insert(sessionPayload)
       .select('id')
       .single();
     if (!newSession) return NextResponse.json({ error: 'Unable to create session' }, { status: 500 });
     sessionId = newSession.id;
   }
 
+  const resolvedSessionId = sessionId as string;
+
   const { data: previousMessages } = await supabase
     .from('ai_messages')
     .select('role, content')
-    .eq('session_id', sessionId)
+    .eq('session_id', resolvedSessionId)
     .order('created_at', { ascending: true });
+
+  const previousMessagesRows = (previousMessages as AiMessageRow[] | null) ?? [];
 
   let hadithContext = '';
   if (body.hadithId) {
@@ -51,20 +63,22 @@ export async function POST(request: Request) {
       .eq('id', body.hadithId)
       .maybeSingle();
 
-    if (hadith) {
+    const hadithRow = hadith as HadithRow | null;
+
+    if (hadithRow) {
       hadithContext = `
 You are answering with this hadith as context:
 
-Collection: ${hadith.collection}
-Book: ${hadith.book_number ?? '-'}
-Hadith: ${hadith.hadith_number ?? '-'}
-Reference: ${hadith.reference ?? '-'}
+Collection: ${hadithRow.collection}
+Book: ${hadithRow.book_number ?? '-'}
+Hadith: ${hadithRow.hadith_number ?? '-'}
+Reference: ${hadithRow.reference ?? '-'}
 
 Arabic:
-${hadith.arabic_text}
+${hadithRow.arabic_text}
 
 English:
-${hadith.english_text}
+${hadithRow.english_text}
 `;
     }
   }
@@ -91,8 +105,8 @@ ${hadithContext}
 
   const messagesForModel: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: 'system', content: systemPrompt }];
 
-  if (previousMessages) {
-    for (const m of previousMessages) {
+  if (previousMessagesRows.length) {
+    for (const m of previousMessagesRows) {
       messagesForModel.push({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
@@ -102,13 +116,16 @@ ${hadithContext}
 
   messagesForModel.push({ role: 'user', content: body.message });
 
-  await supabase.from('ai_messages').insert({
-    session_id: sessionId,
+  const userMessagePayload: AiMessageInsert = {
+    session_id: resolvedSessionId,
     role: 'user',
     content: body.message,
-  });
+  };
+
+  await supabaseUnsafe.from('ai_messages').insert(userMessagePayload);
 
   try {
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: messagesForModel,
@@ -117,9 +134,15 @@ ${hadithContext}
 
     const reply = completion.choices[0]?.message?.content || '';
 
-    const { data: assistantMsg } = await supabase
+    const assistantMessagePayload: AiMessageInsert = {
+      session_id: resolvedSessionId,
+      role: 'assistant',
+      content: reply,
+    };
+
+    const { data: assistantMsg } = await supabaseUnsafe
       .from('ai_messages')
-      .insert({ session_id: sessionId, role: 'assistant', content: reply })
+      .insert(assistantMessagePayload)
       .select('id')
       .single();
 

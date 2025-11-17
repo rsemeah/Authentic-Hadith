@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
 
 type SearchParams = {
   q?: string;
@@ -7,11 +8,14 @@ type SearchParams = {
   topic?: string;
 };
 
-export default async function HadithPage({ searchParams }: { searchParams: SearchParams }) {
+type HadithRow = Database['public']['Tables']['hadith']['Row'];
+
+export default async function HadithPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const params = await searchParams;
   const supabase = createServerSupabaseClient();
-  const q = searchParams.q?.trim();
-  const collection = searchParams.collection?.trim();
-  const topic = searchParams.topic?.trim();
+  const q = params.q?.trim();
+  const collection = params.collection?.trim();
+  const topic = params.topic?.trim();
 
   let query = supabase
     .from('hadith')
@@ -30,6 +34,7 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
   }
 
   const { data: hadithList } = await query;
+  const items = (hadithList as HadithRow[] | null) ?? [];
 
   return (
     <div className="space-y-6 py-4">
@@ -69,7 +74,7 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
       </form>
 
       <section className="space-y-4">
-        {(hadithList || []).map((h) => (
+        {items.map((h) => (
           <article
             key={h.id}
             className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-100 transition hover:ring-neutral-200"
@@ -100,7 +105,7 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
           </article>
         ))}
 
-        {(hadithList || []).length === 0 && (
+        {items.length === 0 && (
           <p className="rounded-2xl border border-dashed border-neutral-200 p-6 text-sm text-neutral-500">
             No results yet. Try another keyword or clear filters.
           </p>

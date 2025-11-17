@@ -1,5 +1,10 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
+
+type SavedHadithRow = Database['public']['Tables']['saved_hadith']['Row'];
+type HadithRow = Database['public']['Tables']['hadith']['Row'];
+type SavedWithHadith = SavedHadithRow & { hadith: HadithRow | null };
 
 export default async function SavedPage() {
   const supabase = createServerSupabaseClient();
@@ -13,7 +18,7 @@ export default async function SavedPage() {
     .select('id, hadith_id, hadith:hadith(id, collection, english_text, arabic_text)')
     .eq('user_id', user.id);
 
-  const items = saved || [];
+  const items = (saved as SavedWithHadith[] | null) ?? [];
 
   return (
     <div className="space-y-6 py-4">
@@ -31,7 +36,7 @@ export default async function SavedPage() {
       ) : (
         <ul className="space-y-4">
           {items.map((row) => {
-            const h = (row as any).hadith as any;
+            const h = row.hadith;
             if (!h) return null;
             return (
               <li key={row.id}>

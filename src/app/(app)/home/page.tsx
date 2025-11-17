@@ -1,5 +1,9 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
+import type { Route } from 'next';
+
+type HadithRow = Database['public']['Tables']['hadith']['Row'];
 
 export default async function HomePage() {
   const supabase = createServerSupabaseClient();
@@ -9,6 +13,8 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  const hadithRow = hadith as HadithRow | null;
 
   return (
     <div className="space-y-6 py-4">
@@ -20,26 +26,26 @@ export default async function HomePage() {
         </p>
       </header>
 
-      {hadith ? (
+      {hadithRow ? (
         <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-neutral-100">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-            <span>{hadith.collection}</span>
+            <span>{hadithRow.collection}</span>
             <span>
-              Book {hadith.book_number ?? '–'} · Hadith {hadith.hadith_number ?? '–'}
+              Book {hadithRow.book_number ?? '–'} · Hadith {hadithRow.hadith_number ?? '–'}
             </span>
           </div>
-          <div className="arabic mt-3 text-right text-lg">{hadith.arabic_text}</div>
-          <p className="mt-3 text-sm text-neutral-800">{hadith.english_text}</p>
+          <div className="arabic mt-3 text-right text-lg">{hadithRow.arabic_text}</div>
+          <p className="mt-3 text-sm text-neutral-800">{hadithRow.english_text}</p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-600">
-            {hadith.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadith.reference}</span>}
+            {hadithRow.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadithRow.reference}</span>}
             <Link
-              href={`/hadith/${hadith.id}`}
+              href={`/hadith/${hadithRow.id}`}
               className="rounded-full border border-neutral-200 px-3 py-1 font-medium text-neutral-800 hover:border-neutral-900"
             >
               Open details
             </Link>
             <Link
-              href={`/assistant?hadithId=${hadith.id}`}
+              href={`/assistant?hadithId=${hadithRow.id}`}
               className="rounded-full border border-neutral-200 px-3 py-1 font-medium text-neutral-800 hover:border-neutral-900"
             >
               Ask the assistant
@@ -53,14 +59,24 @@ export default async function HomePage() {
       )}
 
       <section className="grid gap-3 md:grid-cols-2">
-        {[ 
-          { title: 'Browse narrations', description: 'Search by topic, collection, or keyword.', href: '/hadith' },
-          { title: 'Assistant', description: 'Ask about wording, themes, or simple summaries.', href: '/assistant' },
-          { title: 'Saved list', description: 'Find hadith you have saved to revisit.', href: '/saved' },
-          { title: 'Intentions', description: 'Explore narrations on sincerity and intentions.', href: '/hadith?q=intention' },
-        ].map((card) => (
+        {(
+          [
+            { title: 'Browse narrations', description: 'Search by topic, collection, or keyword.', href: '/hadith' as Route },
+            { title: 'Assistant', description: 'Ask about wording, themes, or simple summaries.', href: '/assistant' as Route },
+            { title: 'Saved list', description: 'Find hadith you have saved to revisit.', href: '/saved' as Route },
+            {
+              title: 'Intentions',
+              description: 'Explore narrations on sincerity and intentions.',
+              href: { pathname: '/hadith' as Route, query: { q: 'intention' } },
+            },
+          ] satisfies {
+            title: string;
+            description: string;
+            href: Route | { pathname: Route; query?: Record<string, string> };
+          }[]
+        ).map((card) => (
           <Link
-            key={card.href}
+            key={card.title}
             href={card.href}
             className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-100 transition hover:ring-neutral-200"
           >

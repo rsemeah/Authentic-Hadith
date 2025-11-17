@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
+
+type AiSessionRow = Database['public']['Tables']['ai_sessions']['Row'];
 
 export async function POST() {
   const supabase = createRouteSupabaseClient();
@@ -14,7 +17,8 @@ export async function POST() {
   const { data: sessions } = await supabase.from('ai_sessions').select('id').eq('user_id', userId);
 
   if (sessions && sessions.length > 0) {
-    const sessionIds = sessions.map((s) => s.id);
+    const typedSessions = sessions as AiSessionRow[];
+    const sessionIds = typedSessions.map((s) => s.id);
     await supabase.from('ai_messages').delete().in('session_id', sessionIds);
   }
 

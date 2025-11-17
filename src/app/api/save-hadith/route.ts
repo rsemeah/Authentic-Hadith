@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import type { Database } from '@/types/supabase';
+
+type SavedHadithInsert = Database['public']['Tables']['saved_hadith']['Insert'];
 
 export async function POST(request: Request) {
   const supabase = createRouteSupabaseClient();
+  const supabaseUnsafe = supabase as any;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -18,9 +22,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ savedId: null });
   }
 
-  const { data, error } = await supabase
+  const payload: SavedHadithInsert = { user_id: user.id, hadith_id: hadithId };
+
+  const { data, error } = await supabaseUnsafe
     .from('saved_hadith')
-    .insert({ user_id: user.id, hadith_id: hadithId })
+    .insert(payload)
     .select('id')
     .single();
 
