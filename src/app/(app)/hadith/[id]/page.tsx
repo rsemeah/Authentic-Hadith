@@ -9,8 +9,15 @@ import type { Database } from '@/types/supabase';
 type HadithRow = Database['public']['Tables']['hadith']['Row'];
 type SavedHadithRow = Database['public']['Tables']['saved_hadith']['Row'];
 
-export default async function HadithDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function HadithDetailPage({
+  params,
+}: {
+  params?: Promise<{ id?: string | string[] }>;
+}) {
+  const resolvedParams = (await params) ?? {};
+  const id = Array.isArray(resolvedParams.id) ? resolvedParams.id[0] : resolvedParams.id;
+
+  if (!id) return notFound();
   const supabase = createServerSupabaseClient();
   const { data: hadith } = await supabase
     .from('hadith')
