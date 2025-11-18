@@ -5,6 +5,8 @@ import { createServerSupabaseClient } from '@/lib/supabaseServer';
 import type { Database } from '@/types/supabase';
 import type { Route } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
 const navItems = [

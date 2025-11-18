@@ -38,6 +38,7 @@ export default function AuthPage() {
         return;
       }
 
+      router.refresh();
       router.push('/onboarding');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
