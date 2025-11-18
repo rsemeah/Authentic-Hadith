@@ -1,6 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
+'use client';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/supabase';
+import { getPublicSupabaseEnv } from './env';
 
-export const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+/**
+ * Creates a Supabase client configured for use in client components.
+ * Uses the public URL and anon key only.
+ */
+export const createSupabaseBrowserClient = (): SupabaseClient<Database> => {
+  const { supabaseUrl, supabaseAnonKey } = getPublicSupabaseEnv();
+  return createClient<Database>(supabaseUrl, supabaseAnonKey);
+};
