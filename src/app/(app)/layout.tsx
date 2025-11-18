@@ -7,6 +7,7 @@ const navItems = [
   { href: '/home', label: 'Home' },
   { href: '/hadith', label: 'Hadith' },
   { href: '/assistant', label: 'Assistant' },
+  { href: '/reflect', label: 'Reflect' },
   { href: '/saved', label: 'Saved' },
   { href: '/settings', label: 'Settings' },
   { href: '/help', label: 'Help' },
