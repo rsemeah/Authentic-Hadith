@@ -32,7 +32,16 @@ export default function AuthPage() {
         return;
       }
 
+      // If email confirmation is required, Supabase returns a null session.
+      if (mode === 'sign-up' && !result.data.session) {
+        setError('Check your inbox to confirm your email before signing in.');
+        return;
+      }
+
       router.push('/onboarding');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }
