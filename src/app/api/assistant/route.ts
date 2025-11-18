@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { createRouteSupabaseClient } from '@/lib/supabaseServer';
 import OpenAI from 'openai';
+import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import { jsonError, jsonOk } from '@/lib/apiResponses';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -15,10 +15,10 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return jsonError('Unauthorized', 401);
 
   const body = (await request.json()) as AssistantRequest;
-  if (!body.message?.trim()) return NextResponse.json({ error: 'Message required' }, { status: 400 });
+  if (!body.message?.trim()) return jsonError('Message required');
 
   let sessionId = body.sessionId || null;
   if (!sessionId) {
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       .insert({ user_id: user.id })
       .select('id')
       .single();
-    if (!newSession) return NextResponse.json({ error: 'Unable to create session' }, { status: 500 });
+    if (!newSession) return jsonError('Unable to create session', 500);
     sessionId = newSession.id;
   }
 
@@ -117,13 +117,13 @@ ${hadithContext}
       .select('id')
       .single();
 
-    return NextResponse.json({
+    return jsonOk({
       sessionId,
       reply,
       aiMessageId: assistantMsg?.id,
     });
   } catch (err) {
-    console.error('Assistant error', err);
-    return NextResponse.json({ error: 'Something went wrong. Please try again in a moment.' }, { status: 500 });
+    console.error('Assistant API error', { userId: user.id, sessionId, hadithId: body.hadithId, error: String(err) });
+    return jsonError('Something went wrong. Please try again in a moment.', 500);
   }
 }
