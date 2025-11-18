@@ -17,16 +17,16 @@
 ## 📝 Files Created/Modified
 
 ### Core Application
-- `app/page.tsx` - Landing page with link to assistant
-- `app/layout.tsx` - Root layout with metadata
-- `app/globals.css` - Global styles with Tailwind v4
-- `app/assistant/page.tsx` - Main chat interface (conflict resolved)
-- `app/assistant/layout.tsx` - Assistant page layout
+- `src/app/page.tsx` - Landing page with link to assistant
+- `src/app/layout.tsx` - Root layout with metadata
+- `src/app/globals.css` - Global styles with Tailwind v4
+- `src/app/(app)/layout.tsx` - Authenticated shell with navigation
+- `src/app/(app)/assistant/page.tsx` - Main chat interface (conflict resolved)
 
 ### Configuration
 - `package.json` - All dependencies with versions
 - `tsconfig.json` - TypeScript configuration
-- `next.config.js` - Next.js configuration
+- `next.config.mjs` - Next.js configuration
 - `tailwind.config.ts` - Tailwind CSS v4 config
 - `postcss.config.js` - PostCSS with @tailwindcss/postcss
 - `vercel.json` - Vercel deployment config
@@ -34,8 +34,9 @@
 - `.env.example` - Environment template
 
 ### Library Code
-- `lib/supabase.ts` - Supabase client with type safety
-- `types/supabase.ts` - TypeScript types for database
+- `src/lib/supabaseClient.ts` - Supabase browser client
+- `src/lib/supabaseServer.ts` - Supabase server and route handler client
+- `src/types/supabase.ts` - TypeScript types for database
 
 ### Documentation
 - `README.md` - Comprehensive project documentation
@@ -55,7 +56,7 @@
 - **Branch B** (main): Removed session UI entirely
 - **Resolution**: Kept session UI (provides better UX)
 
-### Conflict 3: Supabase Client (lib/supabase.ts)
+### Conflict 3: Supabase Client (src/lib/supabaseClient.ts)
 **Issue**: Type safety and error handling approaches
 - **Branch A** (codex): Full types + runtime validation
 - **Branch B** (main): Non-null assertions, no runtime checks
@@ -65,30 +66,32 @@
 
 ```
 Authentic-Hadith/
-├── app/
-│   ├── assistant/
-│   │   ├── page.tsx       (Fixed: Suspense + Suspense boundary)
-│   │   └── layout.tsx     (New: Clean layout)
-│   ├── page.tsx           (New: Landing page)
-│   ├── layout.tsx         (New: Root layout)
-│   └── globals.css        (New: Tailwind v4 styles)
-├── lib/
-│   └── supabase.ts        (New: Type-safe client)
-├── types/
-│   └── supabase.ts        (New: DB types template)
-├── public/                (Standard Next.js)
-├── .next/                 (Built output - ready to deploy)
-├── node_modules/          (All deps installed)
-├── package.json           (All dependencies)
-├── tsconfig.json          (TS config)
-├── next.config.js         (Next.js config)
-├── tailwind.config.ts     (Tailwind v4)
-├── postcss.config.js      (PostCSS config)
-├── vercel.json            (Vercel deployment)
-├── .env.example           (Template)
-├── .gitignore             (Git rules)
-├── README.md              (Full docs)
-└── DEPLOYMENT.md          (Deploy guide)
+├── src/
+│   ├── app/
+│   │   ├── (app)/          (Authenticated routes and layouts)
+│   │   ├── auth/           (Auth screens)
+│   │   ├── onboarding/     (Onboarding flow)
+│   │   ├── page.tsx        (Landing page)
+│   │   ├── layout.tsx      (Root layout)
+│   │   └── globals.css     (Tailwind v4 styles)
+│   ├── lib/
+│   │   ├── supabaseClient.ts (Type-safe browser client)
+│   │   └── supabaseServer.ts (Type-safe server client)
+│   └── types/
+│       └── supabase.ts     (DB types)
+├── public/                 (Standard Next.js)
+├── .next/                  (Built output - ready to deploy)
+├── node_modules/           (All deps installed)
+├── package.json            (All dependencies)
+├── tsconfig.json           (TS config)
+├── next.config.mjs         (Next.js config)
+├── tailwind.config.ts      (Tailwind v4)
+├── postcss.config.js       (PostCSS config)
+├── vercel.json             (Vercel deployment)
+├── .env.example            (Template)
+├── .gitignore              (Git rules)
+├── README.md               (Full docs)
+└── DEPLOYMENT.md           (Deploy guide)
 ```
 
 ## 📊 Build Results
