@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 import SaveHadithButton from './SaveHadithButton';
 import AddNoteForm from './AddNoteForm';
 import ReportHadithButton from './ReportHadithButton';
