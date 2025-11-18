@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { InlineError } from '@/components/InlineError';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -37,7 +38,8 @@ export default function AssistantPage() {
         body: JSON.stringify({ message: text, hadithId, sessionId }),
       });
       if (!res.ok) {
-        setError('Something went wrong. Please try again in a moment.');
+        const data = await res.json().catch(() => null);
+        setError(data?.error || 'Something went wrong. Please try again in a moment.');
         setSending(false);
         return;
       }
@@ -45,7 +47,8 @@ export default function AssistantPage() {
       if (data.sessionId && !sessionId) setSessionId(data.sessionId);
 
       setMessages((prev) => [...prev, { role: 'assistant', content: data.reply, aiMessageId: data.aiMessageId }]);
-    } catch {
+    } catch (err) {
+      console.error('Assistant client error', err);
       setError('Something went wrong. Please try again in a moment.');
     } finally {
       setSending(false);
@@ -126,7 +129,7 @@ export default function AssistantPage() {
             {sending ? 'Sending…' : 'Send'}
           </button>
         </form>
-        {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+        <InlineError message={error} />
       </section>
     </div>
   );

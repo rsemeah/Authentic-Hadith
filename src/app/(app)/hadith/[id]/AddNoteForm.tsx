@@ -2,26 +2,36 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { InlineError } from '@/components/InlineError';
 
 export default function AddNoteForm({ hadithId }: { hadithId: string }) {
   const router = useRouter();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submitNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hadithId, content }),
       });
-      if (res.ok) {
-        setContent('');
-        router.refresh();
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || 'Unable to save note');
+        return;
       }
+
+      setContent('');
+      router.refresh();
+    } catch (err) {
+      console.error('Add note error', err);
+      setError('Unable to save note');
     } finally {
       setLoading(false);
     }
@@ -45,6 +55,7 @@ export default function AddNoteForm({ hadithId }: { hadithId: string }) {
           {loading ? 'Saving…' : 'Save note'}
         </button>
       </div>
+      <InlineError message={error} />
     </form>
   );
 }
