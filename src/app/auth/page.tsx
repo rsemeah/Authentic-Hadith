@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { supabaseClient } from '@/lib/supabaseClient';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createSupabaseBrowserClient } from '@/lib/supabaseClient';
 
 export default function AuthPage() {
   const router = useRouter();
+  const supabaseClient = useMemo(() => createSupabaseBrowserClient(), []);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
@@ -31,6 +32,8 @@ export default function AuthPage() {
       }
 
       router.push('/onboarding');
+    } catch (err) {
+      setError('Unable to reach the authentication service. Check your connection and try again.');
     } finally {
       setLoading(false);
     }

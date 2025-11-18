@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createRouteSupabaseClient } from '@/lib/supabaseServer';
 import OpenAI from 'openai';
+import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import { getOpenAIKey } from '@/lib/env';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: getOpenAIKey() });
 
 interface AssistantRequest {
   message: string;
