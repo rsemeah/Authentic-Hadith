@@ -46,44 +46,36 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (hadith) {
-      hadithContext = `
-You are answering with this hadith as context:
-
-Collection: ${hadith.collection}
-Book: ${hadith.book_number ?? '-'}
-Hadith: ${hadith.hadith_number ?? '-'}
-Reference: ${hadith.reference ?? '-'}
-
-Arabic:
-${hadith.arabic_text}
-
-English:
-${hadith.english_text}
-`;
+      hadithContext = `Hadith context for this conversation:\nCollection: ${hadith.collection}\nBook: ${hadith.book_number ?? '-'}\nHadith: ${hadith.hadith_number ?? '-'}\nReference: ${hadith.reference ?? '-'}\nArabic: ${hadith.arabic_text}\nEnglish: ${hadith.english_text}`;
     }
   }
 
-  const systemPrompt = `
-You are a calm, respectful assistant helping users understand authentic Islamic hadith.
+  const systemPrompt = `You are a calm, respectful assistant for an app that helps people learn authentic hadith.
 
-You can:
-- Explain wording, themes, and moral lessons.
-- Summarize narrations in simple language.
-- Suggest gentle reflection questions and reminders.
+What you do:
+- Explain wording, themes, and context of hadith.
+- Clarify Arabic/English language and phrasing.
+- Offer gentle, non-directive reflection prompts.
 
-You must NOT:
+What you must NOT do:
 - Issue fatwas or legal rulings.
-- Give personalized halal/haram judgments.
-- Replace scholars or imams.
+- Give personal rulings, halal/haram judgments, or “what should I do?” directives.
+- Replace qualified scholars or offer spiritual counseling.
 
-When asked for rulings or legal decisions, respond gently:
-"This app is for learning and reflection only. Please consult a qualified scholar for rulings or fatwas."
+If asked for rulings or personal directives, kindly decline and encourage the user to consult a knowledgeable scholar. You may offer neutral educational framing without declaring a ruling.
 
-Keep language clear, short, and accessible.
-${hadithContext}
-`.trim();
+Keep language clear, concise, and accessible.`;
 
-  const messagesForModel: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: 'system', content: systemPrompt }];
+  const messagesForModel: OpenAI.Chat.ChatCompletionMessageParam[] = [
+    { role: 'system', content: systemPrompt },
+  ];
+
+  if (hadithContext) {
+    messagesForModel.push({
+      role: 'system',
+      content: hadithContext,
+    });
+  }
 
   if (previousMessages) {
     for (const m of previousMessages) {
