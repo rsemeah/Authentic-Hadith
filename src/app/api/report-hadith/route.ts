@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import { jsonError, jsonOk } from '@/lib/apiResponses';
 
 export async function POST(request: Request) {
   const supabase = createRouteSupabaseClient();
@@ -11,16 +11,29 @@ export async function POST(request: Request) {
   const { hadithId, type, description } = body as { hadithId?: string; type: string; description: string };
 
   if (!type || !description?.trim()) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    return jsonError('Missing fields');
   }
 
-  const { error } = await supabase.from('reports').insert({
-    user_id: user?.id ?? null,
-    type,
-    hadith_id: hadithId ?? null,
-    description,
-  });
+  try {
+    const { error } = await supabase.from('reports').insert({
+      user_id: user?.id ?? null,
+      type,
+      hadith_id: hadithId ?? null,
+      description,
+    });
 
-  if (error) return NextResponse.json({ error: 'Unable to submit report' }, { status: 500 });
-  return NextResponse.json({ ok: true });
+    if (error) {
+      console.error('Report hadith insert error', {
+        userId: user?.id,
+        hadithId,
+        type,
+        error: error.message,
+      });
+      return jsonError('Unable to submit report', 500);
+    }
+    return jsonOk({ ok: true });
+  } catch (err) {
+    console.error('Report hadith unexpected error', { userId: user?.id, hadithId, type, error: String(err) });
+    return jsonError('Unable to submit report', 500);
+  }
 }

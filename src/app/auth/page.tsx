@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { supabaseClient } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import { supabaseClient } from '@/lib/supabaseClient';
+import { InlineError } from '@/components/InlineError';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -69,7 +70,7 @@ export default function AuthPage() {
             />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <InlineError message={error} />
 
           <button
             type="submit"
