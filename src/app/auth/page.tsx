@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { getSupabaseClient } from '@/lib/supabaseClient';
+import { useMemo, useState } from 'react';
+import { getSupabaseClient, getSupabaseEnvStatus } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
@@ -12,9 +12,20 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const envStatus = useMemo(() => getSupabaseEnvStatus(), []);
+  const hasEnvIssue = envStatus.missing.length > 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (hasEnvIssue) {
+      setError(
+        `Environment not configured: ${envStatus.missing.join(', ')}. Add them to your Vercel project or a local .env.local file.`,
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -58,6 +69,17 @@ export default function AuthPage() {
           Use email and password to enter. You can adjust your preferences after onboarding.
         </p>
 
+        {hasEnvIssue && (
+          <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <p className="font-medium">Missing Supabase environment variables.</p>
+            <p className="mt-1 text-amber-800">
+              Add <code className="rounded bg-white/70 px-1">NEXT_PUBLIC_SUPABASE_URL</code> and
+              <code className="ml-1 rounded bg-white/70 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to your
+              deployment or <code className="rounded bg-white/70 px-1">.env.local</code> file, then redeploy.
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-800">Email</label>
@@ -67,6 +89,7 @@ export default function AuthPage() {
               className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={hasEnvIssue}
             />
           </div>
 
@@ -78,6 +101,7 @@ export default function AuthPage() {
               className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={hasEnvIssue}
             />
           </div>
 
@@ -85,7 +109,7 @@ export default function AuthPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || hasEnvIssue}
             className="inline-flex w-full items-center justify-center rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-60"
           >
             {loading ? 'Please wait…' : mode === 'sign-in' ? 'Sign in' : 'Sign up'}
@@ -100,6 +124,7 @@ export default function AuthPage() {
                 type="button"
                 onClick={() => setMode('sign-up')}
                 className="font-medium text-neutral-900 hover:underline"
+                disabled={loading}
               >
                 Create an account
               </button>
@@ -111,6 +136,7 @@ export default function AuthPage() {
                 type="button"
                 onClick={() => setMode('sign-in')}
                 className="font-medium text-neutral-900 hover:underline"
+                disabled={loading}
               >
                 Sign in
               </button>

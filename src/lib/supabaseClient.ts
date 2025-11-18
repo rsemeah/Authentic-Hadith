@@ -1,23 +1,21 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/types/supabase';
+import { assertSupabaseEnv, getSupabaseEnv } from './env';
 
-type SupabaseBrowserClient = ReturnType<typeof createClientComponentClient<Database>>;
+type SupabaseBrowserClient = ReturnType<typeof createClientComponentClient<Database, 'public'>>;
 
 let supabaseClient: SupabaseBrowserClient | null = null;
 
 export const getSupabaseClient = (): SupabaseBrowserClient => {
   if (supabaseClient) return supabaseClient;
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const { supabaseUrl, supabaseAnonKey } = assertSupabaseEnv();
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables.');
-  }
-
-  supabaseClient = createClientComponentClient<Database>({
+  supabaseClient = createClientComponentClient<Database, 'public'>({
     supabaseUrl,
     supabaseKey: supabaseAnonKey,
   });
   return supabaseClient;
 };
+
+export const getSupabaseEnvStatus = getSupabaseEnv;

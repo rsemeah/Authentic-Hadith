@@ -1,13 +1,20 @@
 import { cookies } from 'next/headers';
 import { createServerComponentClient, createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import type { Database } from '@/types/supabase';
+import { assertSupabaseEnv } from './env';
 
 export const createServerSupabaseClient = () => {
   const cookieStore = cookies();
-  return createServerComponentClient<Database>({ cookies: () => cookieStore });
+  assertSupabaseEnv();
+  return createServerComponentClient<Database, 'public'>({
+    cookies: () => cookieStore,
+  }) as any;
 };
 
 export const createRouteSupabaseClient = () => {
   const cookieStore = cookies();
-  return createRouteHandlerClient<Database>({ cookies: () => cookieStore });
+  assertSupabaseEnv();
+  return createRouteHandlerClient<Database, 'public'>({
+    cookies: () => cookieStore,
+  }) as any;
 };

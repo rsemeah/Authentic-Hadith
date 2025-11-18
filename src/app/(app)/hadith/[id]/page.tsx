@@ -15,14 +15,16 @@ export default async function HadithDetailPage({
   params?: Promise<{ id?: string | string[] }>;
 }) {
   const resolvedParams = (await params) ?? {};
-  const id = Array.isArray(resolvedParams.id) ? resolvedParams.id[0] : resolvedParams.id;
+  const idValue = Array.isArray(resolvedParams.id) ? resolvedParams.id[0] : resolvedParams.id;
 
-  if (!id) return notFound();
-  const supabase = createServerSupabaseClient();
+  if (!idValue) return notFound();
+
+  const hadithId: HadithRow['id'] = idValue as HadithRow['id'];
+  const supabase = createServerSupabaseClient() as any;
   const { data: hadith } = await supabase
     .from('hadith')
     .select('id, collection, book_number, hadith_number, arabic_text, english_text, grading, reference, topic_tags')
-    .eq('id', id)
+    .eq('id', hadithId)
     .maybeSingle();
 
   const hadithRow = hadith as HadithRow | null;
