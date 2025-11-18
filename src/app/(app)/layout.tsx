@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ReactNode } from 'react';
 import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { LogoutButton } from '@/components/LogoutButton';
 
 const navItems = [
   { href: '/home', label: 'Home' },
@@ -31,17 +32,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           <h1 className="text-lg font-semibold text-neutral-900">Authentic Hadith</h1>
           <p className="text-sm text-neutral-600">As-salāmu ʿalaykum, {displayName}.</p>
         </div>
-        <nav className="flex flex-wrap gap-2 text-sm">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full border border-neutral-200 px-3 py-1.5 text-neutral-700 hover:border-neutral-900 hover:text-neutral-900"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+          <nav className="flex flex-wrap gap-2 text-sm">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-neutral-200 px-3 py-1.5 text-neutral-700 hover:border-neutral-900 hover:text-neutral-900"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <LogoutButton />
+        </div>
       </header>
       <main>{children}</main>
     </div>
