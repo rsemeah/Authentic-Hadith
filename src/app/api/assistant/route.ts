@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createRouteSupabaseClient } from '@/lib/supabaseServer';
+import { createRouteSupabaseClient } from '@/lib/SupabaseServer';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

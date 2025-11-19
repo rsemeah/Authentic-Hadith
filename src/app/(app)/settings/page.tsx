@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 import SettingsClient from './SettingsClient';
 
 export default async function SettingsPage() {
