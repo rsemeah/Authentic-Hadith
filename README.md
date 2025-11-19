@@ -49,6 +49,14 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
+Stripe is used for payments. Add these keys to enable the paywall:
+```
+STRIPE_SECRET_KEY=sk_live_or_test_key
+NEXT_PUBLIC_STRIPE_PRICE_MONTHLY=price_from_stripe
+NEXT_PUBLIC_STRIPE_PRICE_ANNUAL=price_from_stripe
+APP_URL=http://localhost:3000
+```
+
 4. Run the development server:
 ```bash
 npm run dev
