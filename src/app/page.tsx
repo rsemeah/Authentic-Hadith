@@ -21,6 +21,12 @@ export default function LandingPage() {
           <Link href="/auth" className="text-sm font-medium text-neutral-700 hover:text-neutral-900">
             Sign in
           </Link>
+          <Link
+            href="/paywall"
+            className="rounded-full bg-white px-6 py-2.5 text-sm font-medium text-neutral-900 shadow-sm ring-1 ring-neutral-200 hover:bg-neutral-50"
+          >
+            See Premium
+          </Link>
         </div>
       </section>
 
