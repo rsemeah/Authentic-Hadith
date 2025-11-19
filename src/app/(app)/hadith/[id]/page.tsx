@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 import SaveHadithButton from './SaveHadithButton';
 import AddNoteForm from './AddNoteForm';
 import ReportHadithButton from './ReportHadithButton';
+import NotesList from './NotesList';
 
 interface HadithDetailPageProps {
   params: { id: string };
@@ -97,15 +98,7 @@ export default async function HadithDetailPage({ params }: HadithDetailPageProps
             <span className="text-xs text-neutral-500">Only you can see these</span>
           </div>
           <AddNoteForm hadithId={hadith.id} />
-          <ul className="space-y-2 text-sm text-neutral-700">
-            {notes.length === 0 && <li className="text-neutral-500">No notes yet.</li>}
-            {notes.map((note) => (
-              <li key={note.id} className="rounded-xl bg-neutral-50 p-3">
-                <p className="whitespace-pre-wrap">{note.content}</p>
-                <p className="mt-1 text-[11px] text-neutral-500">{new Date(note.created_at).toLocaleString()}</p>
-              </li>
-            ))}
-          </ul>
+          <NotesList notes={notes} />
         </section>
       )}
     </div>

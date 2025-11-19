@@ -19,3 +19,55 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: 'Unable to save note' }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
+
+export async function PATCH(request: Request) {
+  const supabase = createRouteSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const body = await request.json();
+  const { id, content } = body as { id?: string; content?: string };
+
+  if (!id || !content?.trim()) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+  }
+
+  const { data, error } = await supabase
+    .from('notes')
+    .update({ content })
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ error: 'Unable to update note' }, { status: 500 });
+  if (!data) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(request: Request) {
+  const supabase = createRouteSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const body = await request.json();
+  const { id } = body as { id?: string };
+
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+
+  const { data, error } = await supabase
+    .from('notes')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select('id')
+    .maybeSingle();
+
+  if (error) return NextResponse.json({ error: 'Unable to delete note' }, { status: 500 });
+  if (!data) return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}

@@ -7,21 +7,26 @@ export default function AddNoteForm({ hadithId }: { hadithId: string }) {
   const router = useRouter();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submitNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hadithId, content }),
       });
-      if (res.ok) {
-        setContent('');
-        router.refresh();
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error || 'Unable to save note');
+        return;
       }
+      setContent('');
+      router.refresh();
     } finally {
       setLoading(false);
     }
@@ -45,6 +50,7 @@ export default function AddNoteForm({ hadithId }: { hadithId: string }) {
           {loading ? 'Saving…' : 'Save note'}
         </button>
       </div>
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </form>
   );
 }

@@ -11,7 +11,8 @@ export default async function SavedPage() {
   const { data: saved } = await supabase
     .from('saved_hadith')
     .select('id, hadith_id, hadith:hadith(id, collection, english_text, arabic_text)')
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
 
   const items = saved || [];
 
@@ -25,9 +26,16 @@ export default async function SavedPage() {
       </header>
 
       {items.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-neutral-200 p-6 text-sm text-neutral-500">
-          You haven&apos;t saved any hadith yet. When a hadith resonates with you, tap &quot;Save&quot; on its page and it will appear here.
-        </p>
+        <div className="rounded-2xl border border-dashed border-neutral-200 p-6 text-sm text-neutral-600">
+          <p className="font-medium text-neutral-700">You haven&apos;t saved any hadith yet.</p>
+          <p className="mt-1">When a narration resonates with you, tap “Save” on its page and it will be kept here.</p>
+          <Link
+            href="/hadith"
+            className="mt-3 inline-flex rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-neutral-900 hover:text-neutral-900"
+          >
+            Browse hadith
+          </Link>
+        </div>
       ) : (
         <ul className="space-y-4">
           {items.map((row) => {
