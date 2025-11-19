@@ -5,19 +5,37 @@ type SearchParams = {
   q?: string;
   collection?: string;
   topic?: string;
+  page?: string;
 };
+
+const pageSize = 20;
 
 export default async function HadithPage({ searchParams }: { searchParams: SearchParams }) {
   const supabase = createServerSupabaseClient();
   const q = searchParams.q?.trim();
   const collection = searchParams.collection?.trim();
   const topic = searchParams.topic?.trim();
+  const page = Math.max(Number(searchParams.page) || 1, 1);
+
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
 
   let query = supabase
     .from('hadith')
-    .select('id, collection, book_number, hadith_number, arabic_text, english_text, topic_tags, reference')
+    .select('id, collection, book_number, hadith_number, arabic_text, english_text, topic_tags, reference', {
+      count: 'exact',
+    })
     .order('created_at', { ascending: false })
-    .limit(30);
+    .range(from, to);
+
+  /*
+    Index recommendations (run manually in Supabase DB console):
+    - CREATE INDEX hadith_english_text_lower_idx ON hadith (lower(english_text));
+    - CREATE INDEX hadith_arabic_text_lower_idx ON hadith (lower(arabic_text));
+    - CREATE INDEX hadith_topic_tags_gin ON hadith USING GIN (topic_tags);
+
+    These improve case-insensitive text searches and filtering on topic tags.
+  */
 
   if (q) {
     query = query.or(`english_text.ilike.%${q}%,arabic_text.ilike.%${q}%`);
@@ -29,7 +47,24 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
     query = query.contains('topic_tags', [topic]);
   }
 
-  const { data: hadithList } = await query;
+  const { data: hadithList, error, count } = await query;
+
+  if (error) {
+    console.error('Error fetching hadith list', error);
+  }
+
+  const totalCount = count ?? 0;
+
+  const buildSearchParams = (pageValue: number) => {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (collection) params.set('collection', collection);
+    if (topic) params.set('topic', topic);
+    params.set('page', String(pageValue));
+    return params.toString();
+  };
+
+  const hasNextPage = page * pageSize < totalCount;
 
   return (
     <div className="space-y-6 py-4">
@@ -58,6 +93,7 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
           placeholder="Topic tag (e.g., intentions)"
           className="rounded-xl border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
         />
+        <input type="hidden" name="page" value="1" />
         <div className="md:col-span-3 flex justify-end">
           <button
             type="submit"
@@ -69,6 +105,12 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
       </form>
 
       <section className="space-y-4">
+        {error && (
+          <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            Something went wrong loading hadith. Please try again.
+          </p>
+        )}
+
         {(hadithList || []).map((h) => (
           <article
             key={h.id}
@@ -100,10 +142,44 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
           </article>
         ))}
 
-        {(hadithList || []).length === 0 && (
+        {(hadithList || []).length === 0 && !error && (
           <p className="rounded-2xl border border-dashed border-neutral-200 p-6 text-sm text-neutral-500">
-            No results yet. Try another keyword or clear filters.
+            {q || collection || topic
+              ? 'No hadith matched this search. Try a simpler keyword or another collection.'
+              : 'No hadith found yet. Try adding a keyword or filter.'}
           </p>
+        )}
+
+        {totalCount > 0 && (
+          <div className="flex items-center justify-between rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-700">
+            <span>
+              Showing {Math.min(to + 1, totalCount)} of {totalCount} hadith
+            </span>
+            <div className="flex items-center gap-2">
+              <Link
+                aria-disabled={page === 1}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                  page === 1
+                    ? 'cursor-not-allowed border-neutral-200 text-neutral-300'
+                    : 'border-neutral-300 text-neutral-800 hover:border-neutral-900'
+                }`}
+                href={`?${buildSearchParams(Math.max(page - 1, 1))}`}
+              >
+                Previous
+              </Link>
+              <Link
+                aria-disabled={!hasNextPage}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                  hasNextPage
+                    ? 'border-neutral-300 text-neutral-800 hover:border-neutral-900'
+                    : 'cursor-not-allowed border-neutral-200 text-neutral-300'
+                }`}
+                href={`?${buildSearchParams(hasNextPage ? page + 1 : page)}`}
+              >
+                Next
+              </Link>
+            </div>
+          </div>
         )}
       </section>
     </div>
