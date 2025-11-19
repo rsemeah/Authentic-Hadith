@@ -94,19 +94,24 @@ CMD ["npm", "start"]
 ## 🔧 Project Structure
 
 ```
-├── app/
-│   ├── assistant/
-│   │   ├── page.tsx       ← Main chat interface
-│   │   └── layout.tsx     ← Page layout
-│   ├── page.tsx           ← Landing page
-│   ├── layout.tsx         ← Root layout
-│   └── globals.css        ← Global styles
-├── lib/
-│   └── supabase.ts        ← Database client
-├── types/
-│   └── supabase.ts        ← TypeScript types
+├── src/
+│   ├── app/
+│   │   ├── (app)/         ← Authenticated routes and layout
+│   │   ├── auth/          ← Authentication screens
+│   │   ├── onboarding/    ← Onboarding flow
+│   │   ├── page.tsx       ← Landing page
+│   │   ├── layout.tsx     ← Root layout
+│   │   └── globals.css    ← Global styles
+│   ├── lib/
+│   │   ├── supabaseClient.ts ← Browser Supabase client
+│   │   └── supabaseServer.ts ← Server/route Supabase client
+│   └── types/
+│       └── supabase.ts    ← TypeScript database types
 ├── package.json           ← Dependencies
-└── tsconfig.json          ← TypeScript config
+├── tsconfig.json          ← TypeScript config
+├── next.config.mjs        ← Next.js config
+├── tailwind.config.ts     ← Tailwind CSS config
+└── postcss.config.js      ← PostCSS config
 ```
 
 ## 📦 Key Dependencies
@@ -148,8 +153,8 @@ npm run build
 ## 📚 Next Steps
 
 1. **Implement API Routes**
-   - Create `app/api/assistant/route.ts`
-   - Create `app/api/report-ai/route.ts`
+   - Create `src/app/api/assistant/route.ts`
+   - Create `src/app/api/report-ai/route.ts`
 
 2. **Set Up Supabase**
    - Create tables for messages and feedback

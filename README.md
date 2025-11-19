@@ -60,22 +60,25 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```
 Authentic-Hadith/
-├── app/
-│   ├── assistant/
-│   │   ├── page.tsx       # Main chat interface
-│   │   └── layout.tsx     # Layout for assistant page
-│   ├── page.tsx           # Home page
-│   ├── layout.tsx         # Root layout
-│   └── globals.css        # Global styles
-├── lib/
-│   └── supabase.ts        # Supabase client configuration
-├── types/
-│   └── supabase.ts        # TypeScript types for database
+├── src/
+│   ├── app/
+│   │   ├── (app)/...      # Authenticated routes and layouts
+│   │   ├── auth/          # Authentication screens
+│   │   ├── onboarding/    # Onboarding flow
+│   │   ├── page.tsx       # Landing page
+│   │   ├── layout.tsx     # Root layout
+│   │   └── globals.css    # Global styles
+│   ├── lib/
+│   │   ├── supabaseClient.ts  # Browser Supabase client
+│   │   └── supabaseServer.ts  # Server and route handler client
+│   └── types/
+│       └── supabase.ts    # TypeScript types for database
 ├── package.json           # Project dependencies
 ├── tsconfig.json          # TypeScript configuration
-├── next.config.js         # Next.js configuration
+├── next.config.mjs        # Next.js configuration
 ├── tailwind.config.ts     # Tailwind CSS configuration
-└── postcss.config.js      # PostCSS configuration
+├── postcss.config.js      # PostCSS configuration
+└── vercel.json            # Vercel configuration
 ```
 
 ## Development
