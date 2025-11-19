@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 
 type SearchParams = {
   q?: string;

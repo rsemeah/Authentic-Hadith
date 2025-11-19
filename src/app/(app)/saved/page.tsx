@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 
 export default async function SavedPage() {
   const supabase = createServerSupabaseClient();

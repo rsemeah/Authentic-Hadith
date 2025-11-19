@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ReactNode } from 'react';
-import { createServerSupabaseClient } from '@/lib/supabaseServer';
+import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 
 const navItems = [
   { href: '/home', label: 'Home' },
