@@ -1,6 +1,24 @@
 # Quick Start & Deployment Guide
 
-## ✅ Project Status
+## ⚠️ Current Blocker
+
+> **Summary:** Dependency installation cannot complete inside the build environment because every request to the npm registry
+> is intercepted by the corporate proxy and answered with `403 Forbidden`. Without the published `next`, `react`, `@supabase/*`,
+> and other packages, the project cannot run `npm run build`, `npm run dev`, or any deployment command. You must provide an
+> offline cache of `node_modules` or allow outgoing HTTPS traffic to `https://registry.npmjs.org` for the build to succeed.
+
+### Evidence
+- `npm install` creates only empty package folders because the tarballs cannot be downloaded.
+- `npx next --version` and `npm run build` both fail while trying to resolve `next`, returning the registry error:
+
+  ```text
+  npm ERR! code E403
+  npm ERR! 403 Forbidden - GET https://registry.npmjs.org/next
+  ```
+
+Until those registry requests can succeed, the sections below remain aspirational.
+
+## ✅ Project Status (requires working registry access)
 - **Build Status**: ✓ Successful
 - **TypeScript Errors**: ✓ All Fixed
 - **Dependencies**: ✓ Installed & Secure
