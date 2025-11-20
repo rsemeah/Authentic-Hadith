@@ -1,6 +1,17 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/SupabaseServer';
 
+type SavedHadithRow = {
+  id: string;
+  hadith_id: string;
+  hadith: {
+    id: string;
+    collection: string | null;
+    english_text: string | null;
+    arabic_text: string | null;
+  } | null;
+};
+
 export default async function SavedPage() {
   const supabase = createServerSupabaseClient();
   const {
@@ -30,8 +41,8 @@ export default async function SavedPage() {
         </p>
       ) : (
         <ul className="space-y-4">
-          {items.map((row) => {
-            const h = (row as any).hadith as any;
+          {items.map((row: SavedHadithRow) => {
+            const h = row.hadith;
             if (!h) return null;
             return (
               <li key={row.id}>

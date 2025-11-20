@@ -24,11 +24,11 @@ export async function POST(request: Request) {
   if (!sessionId) {
     const { data: newSession } = await supabase
       .from('ai_sessions')
-      .insert({ user_id: user.id })
+      .insert({ user_id: user.id } as any)
       .select('id')
       .single();
     if (!newSession) return NextResponse.json({ error: 'Unable to create session' }, { status: 500 });
-    sessionId = newSession.id;
+    sessionId = (newSession as any).id;
   }
 
   const { data: previousMessages } = await supabase
@@ -46,19 +46,20 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (hadith) {
+      const h = hadith as any;
       hadithContext = `
 You are answering with this hadith as context:
 
-Collection: ${hadith.collection}
-Book: ${hadith.book_number ?? '-'}
-Hadith: ${hadith.hadith_number ?? '-'}
-Reference: ${hadith.reference ?? '-'}
+Collection: ${h.collection}
+Book: ${h.book_number ?? '-'}
+Hadith: ${h.hadith_number ?? '-'}
+Reference: ${h.reference ?? '-'}
 
 Arabic:
-${hadith.arabic_text}
+${h.arabic_text}
 
 English:
-${hadith.english_text}
+${h.english_text}
 `;
     }
   }
@@ -86,7 +87,7 @@ ${hadithContext}
   const messagesForModel: OpenAI.Chat.ChatCompletionMessageParam[] = [{ role: 'system', content: systemPrompt }];
 
   if (previousMessages) {
-    for (const m of previousMessages) {
+    for (const m of previousMessages as any[]) {
       messagesForModel.push({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
@@ -100,7 +101,7 @@ ${hadithContext}
     session_id: sessionId,
     role: 'user',
     content: body.message,
-  });
+  } as any);
 
   try {
     const completion = await openai.chat.completions.create({
@@ -113,14 +114,14 @@ ${hadithContext}
 
     const { data: assistantMsg } = await supabase
       .from('ai_messages')
-      .insert({ session_id: sessionId, role: 'assistant', content: reply })
+      .insert({ session_id: sessionId, role: 'assistant', content: reply } as any)
       .select('id')
       .single();
 
     return NextResponse.json({
       sessionId,
       reply,
-      aiMessageId: assistantMsg?.id,
+      aiMessageId: (assistantMsg as any)?.id,
     });
   } catch (err) {
     console.error('Assistant error', err);
