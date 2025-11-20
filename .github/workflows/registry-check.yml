@@ -1,0 +1,189 @@
+name: NPM Registry Access Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  registry-check:
+    name: Check NPM Registry Accessibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check NPM Registry Access
+        id: registry_check
+        run: |
+          echo "🔍 Checking npm registry accessibility..."
+          echo "================================================"
+
+          # Test registry access
+          if curl -f -s -I --max-time 10 \
+            https://registry.npmjs.org/ > /dev/null 2>&1; then
+            echo "✅ NPM registry (https://registry.npmjs.org) is accessible"
+            REGISTRY_STATUS="success"
+          else
+            echo "❌ FAILED: Cannot access NPM registry"
+            echo "   (https://registry.npmjs.org)"
+            REGISTRY_STATUS="failed"
+          fi
+
+          # Test a specific package
+          echo ""
+          echo "🔍 Testing package download (next)..."
+          if curl -f -s --max-time 10 \
+            https://registry.npmjs.org/next > /dev/null 2>&1; then
+            echo "✅ Package metadata download works"
+            PACKAGE_STATUS="success"
+          else
+            echo "❌ FAILED: Cannot download package metadata"
+            PACKAGE_STATUS="failed"
+          fi
+
+          echo ""
+          echo "================================================"
+
+          # Check if any test failed
+          if [ "$REGISTRY_STATUS" = "failed" ] || \
+            [ "$PACKAGE_STATUS" = "failed" ]; then
+            echo ""
+            echo "🚨 NPM REGISTRY ACCESS FAILURE DETECTED"
+            echo "================================================"
+            echo ""
+            echo "The npm registry (https://registry.npmjs.org) is not"
+            echo "accessible. This will cause all npm install/build"
+            echo "commands to fail with 403 or timeout errors."
+            echo ""
+            echo "📋 TROUBLESHOOTING STEPS:"
+            echo ""
+            echo "1. CHECK NETWORK/PROXY SETTINGS:"
+            echo "   - Verify your internet connection is active"
+            echo "   - Check if you're behind a corporate proxy or firewall"
+            echo "   - Ensure https://registry.npmjs.org is not blocked"
+            echo ""
+            echo "2. VERIFY NPM CONFIGURATION:"
+            echo "   - Run: npm config get registry"
+            echo "   - Should return: https://registry.npmjs.org/"
+            echo "   - If different, reset with:"
+            echo "     npm config set registry https://registry.npmjs.org/"
+            echo ""
+            echo "3. TEST REGISTRY ACCESS LOCALLY:"
+            echo "   - Run: curl -I https://registry.npmjs.org/"
+            echo "   - Should return: HTTP/2 200"
+            echo "   - If 403/blocked, contact your network administrator"
+            echo ""
+            echo "4. FOR PROXY ENVIRONMENTS:"
+            echo "   - Configure npm proxy:"
+            echo "     npm config set proxy http://proxy:port"
+            echo "   - Configure https proxy:"
+            echo "     npm config set https-proxy http://proxy:port"
+            echo ""
+            echo "5. ALTERNATIVE REGISTRIES (temporary workaround):"
+            echo "   - Use a mirror:"
+            echo "     npm config set registry https://registry.npmmirror.com/"
+            echo "   - Note: Not recommended for production deployments"
+            echo ""
+            echo "6. FOR CI/CD ENVIRONMENTS:"
+            echo "   - Ensure GitHub Actions runners have internet access"
+            echo "   - Check organization/repository network settings"
+            echo "   - Verify no IP blocking or rate limiting"
+            echo ""
+            echo "7. DEPLOYMENT PLATFORMS:"
+            echo "   - Vercel: Registry access is built-in, no action needed"
+            echo "   - Railway: Ensure no custom network restrictions"
+            echo "   - Docker: Use --network=host or check container networking"
+            echo ""
+            echo "📚 See DEPLOYMENT.md for detailed guidance on registry"
+            echo "   access issues."
+            echo ""
+            echo "================================================"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All registry access checks passed!"
+          echo "✅ Ready to proceed with npm install and build"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify Installation
+        run: |
+          echo "🔍 Verifying critical packages are installed..."
+          echo "================================================"
+
+          # Check if next is installed
+          if [ -d "node_modules/next" ]; then
+            echo "✅ next package installed"
+          else
+            echo "❌ next package missing"
+            exit 1
+          fi
+
+          # Check if react is installed
+          if [ -d "node_modules/react" ]; then
+            echo "✅ react package installed"
+          else
+            echo "❌ react package missing"
+            exit 1
+          fi
+
+          # Try to get next version
+          echo ""
+          echo "Next.js version:"
+          npx next --version || \
+            echo "⚠️  Could not determine Next.js version"
+
+          echo ""
+          echo "================================================"
+          echo "✅ All critical packages verified!"
+
+      - name: Build Project
+        run: npm run build
+        env:
+          # Prevent Next.js telemetry during CI
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Success Summary
+        if: success()
+        run: |
+          echo ""
+          echo "================================================"
+          echo "✅ NPM REGISTRY CHECK: PASSED"
+          echo "================================================"
+          echo ""
+          echo "Registry is accessible ✓"
+          echo "Dependencies installed ✓"
+          echo "Build completed successfully ✓"
+          echo ""
+          echo "This PR is ready to merge!"
+          echo "================================================"
+
+      - name: Failure Summary
+        if: failure()
+        run: |
+          echo ""
+          echo "================================================"
+          echo "❌ BUILD FAILED"
+          echo "================================================"
+          echo ""
+          echo "One or more steps failed. Common causes:"
+          echo ""
+          echo "1. NPM registry is blocked (see logs above)"
+          echo "2. Missing or incorrect package versions"
+          echo "3. Build errors in source code"
+          echo "4. TypeScript compilation errors"
+          echo ""
+          echo "Review the logs above for specific error messages."
+          echo "See DEPLOYMENT.md for troubleshooting guidance."
+          echo "================================================"
