@@ -19,6 +19,19 @@ export default async function HadithDetailPage({ params }: HadithDetailPageProps
 
   if (!hadith) return notFound();
 
+  // Type assertion after null check
+  const hadithData = hadith as {
+    id: string;
+    collection: string | null;
+    book_number: number | null;
+    hadith_number: number | null;
+    arabic_text: string | null;
+    english_text: string | null;
+    grading: string | null;
+    reference: string | null;
+    topic_tags: string[] | null;
+  };
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -31,17 +44,17 @@ export default async function HadithDetailPage({ params }: HadithDetailPageProps
       .from('saved_hadith')
       .select('id')
       .eq('user_id', user.id)
-      .eq('hadith_id', hadith.id)
+      .eq('hadith_id', hadithData.id)
       .maybeSingle();
-    savedId = saved?.id ?? null;
+    savedId = (saved as { id: string } | null)?.id ?? null;
 
     const { data: userNotes } = await supabase
       .from('notes')
       .select('id, content, created_at')
       .eq('user_id', user.id)
-      .eq('hadith_id', hadith.id)
+      .eq('hadith_id', hadithData.id)
       .order('created_at', { ascending: false });
-    notes = userNotes || [];
+    notes = (userNotes as { id: string; content: string; created_at: string }[]) || [];
   }
 
   return (
@@ -49,25 +62,25 @@ export default async function HadithDetailPage({ params }: HadithDetailPageProps
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-neutral-500">Hadith</p>
-          <h1 className="text-xl font-semibold text-neutral-900">{hadith.collection}</h1>
+          <h1 className="text-xl font-semibold text-neutral-900">{hadithData.collection}</h1>
           <p className="text-sm text-neutral-600">
-            Book {hadith.book_number ?? '–'} · Hadith {hadith.hadith_number ?? '–'}
+            Book {hadithData.book_number ?? '–'} · Hadith {hadithData.hadith_number ?? '–'}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          {user ? <SaveHadithButton hadithId={hadith.id} initialSavedId={savedId} /> : null}
-          <ReportHadithButton hadithId={hadith.id} />
+          {user ? <SaveHadithButton hadithId={hadithData.id} initialSavedId={savedId} /> : null}
+          <ReportHadithButton hadithId={hadithData.id} />
         </div>
       </div>
 
       <article className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-neutral-100">
-        <div className="arabic text-right text-lg leading-9">{hadith.arabic_text}</div>
-        <p className="text-sm text-neutral-800">{hadith.english_text}</p>
+        <div className="arabic text-right text-lg leading-9">{hadithData.arabic_text}</div>
+        <p className="text-sm text-neutral-800">{hadithData.english_text}</p>
         <div className="flex flex-wrap gap-2 text-xs text-neutral-600">
-          {hadith.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadith.reference}</span>}
-          {hadith.grading && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadith.grading}</span>}
-          {Array.isArray(hadith.topic_tags) &&
-            hadith.topic_tags.map((tag) => (
+          {hadithData.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadithData.reference}</span>}
+          {hadithData.grading && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadithData.grading}</span>}
+          {Array.isArray(hadithData.topic_tags) &&
+            hadithData.topic_tags.map((tag: string) => (
               <span key={tag} className="rounded-full bg-neutral-100 px-3 py-1">
                 {tag}
               </span>
@@ -77,7 +90,7 @@ export default async function HadithDetailPage({ params }: HadithDetailPageProps
 
       <div className="flex flex-wrap gap-3 text-sm">
         <Link
-          href={`/assistant?hadithId=${hadith.id}`}
+          href={`/assistant?hadithId=${hadithData.id}`}
           className="rounded-full border border-neutral-200 px-4 py-2 font-medium text-neutral-800 hover:border-neutral-900"
         >
           Ask the assistant about this hadith
@@ -96,7 +109,7 @@ export default async function HadithDetailPage({ params }: HadithDetailPageProps
             <h2 className="text-sm font-semibold text-neutral-900">Notes</h2>
             <span className="text-xs text-neutral-500">Only you can see these</span>
           </div>
-          <AddNoteForm hadithId={hadith.id} />
+          <AddNoteForm hadithId={hadithData.id} />
           <ul className="space-y-2 text-sm text-neutral-700">
             {notes.length === 0 && <li className="text-neutral-500">No notes yet.</li>}
             {notes.map((note) => (

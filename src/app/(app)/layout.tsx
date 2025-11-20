@@ -22,7 +22,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   if (!user) redirect('/auth');
 
   const { data: profile } = await supabase.from('profiles').select('name').eq('id', user.id).maybeSingle();
-  const displayName = profile?.name || user.email || 'Friend';
+  const displayName = (profile as { name?: string } | null)?.name || user.email || 'Friend';
 
   return (
     <div className="space-y-8">

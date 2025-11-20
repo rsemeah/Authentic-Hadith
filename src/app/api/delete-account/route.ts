@@ -14,7 +14,7 @@ export async function POST() {
   const { data: sessions } = await supabase.from('ai_sessions').select('id').eq('user_id', userId);
 
   if (sessions && sessions.length > 0) {
-    const sessionIds = sessions.map((s) => s.id);
+    const sessionIds = sessions.map((s: { id: string }) => s.id);
     await supabase.from('ai_messages').delete().in('session_id', sessionIds);
   }
 

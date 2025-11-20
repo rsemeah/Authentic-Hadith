@@ -10,6 +10,16 @@ export default async function HomePage() {
     .limit(1)
     .maybeSingle();
 
+  const hadithData = hadith as {
+    id: string;
+    arabic_text: string | null;
+    english_text: string | null;
+    collection: string | null;
+    book_number: number | null;
+    hadith_number: number | null;
+    reference: string | null;
+  } | null;
+
   return (
     <div className="space-y-6 py-4">
       <header className="space-y-1">
@@ -20,26 +30,26 @@ export default async function HomePage() {
         </p>
       </header>
 
-      {hadith ? (
+      {hadithData ? (
         <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-neutral-100">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-            <span>{hadith.collection}</span>
+            <span>{hadithData.collection}</span>
             <span>
-              Book {hadith.book_number ?? '–'} · Hadith {hadith.hadith_number ?? '–'}
+              Book {hadithData.book_number ?? '–'} · Hadith {hadithData.hadith_number ?? '–'}
             </span>
           </div>
-          <div className="arabic mt-3 text-right text-lg">{hadith.arabic_text}</div>
-          <p className="mt-3 text-sm text-neutral-800">{hadith.english_text}</p>
+          <div className="arabic mt-3 text-right text-lg">{hadithData.arabic_text}</div>
+          <p className="mt-3 text-sm text-neutral-800">{hadithData.english_text}</p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-600">
-            {hadith.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadith.reference}</span>}
+            {hadithData.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{hadithData.reference}</span>}
             <Link
-              href={`/hadith/${hadith.id}`}
+              href={`/hadith/${hadithData.id}`}
               className="rounded-full border border-neutral-200 px-3 py-1 font-medium text-neutral-800 hover:border-neutral-900"
             >
               Open details
             </Link>
             <Link
-              href={`/assistant?hadithId=${hadith.id}`}
+              href={`/assistant?hadithId=${hadithData.id}`}
               className="rounded-full border border-neutral-200 px-3 py-1 font-medium text-neutral-800 hover:border-neutral-900"
             >
               Ask the assistant

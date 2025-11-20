@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
 
-  const { error } = await supabase.from('notes').insert({ user_id: user.id, hadith_id: hadithId, content });
+  const { error } = await supabase.from('notes').insert({ user_id: user.id, hadith_id: hadithId, content } as any);
   if (error) return NextResponse.json({ error: 'Unable to save note' }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

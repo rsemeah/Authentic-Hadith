@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     type,
     hadith_id: hadithId ?? null,
     description,
-  });
+  } as any);
 
   if (error) return NextResponse.json({ error: 'Unable to submit report' }, { status: 500 });
   return NextResponse.json({ ok: true });

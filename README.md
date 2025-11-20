@@ -21,9 +21,19 @@ An AI-powered assistant for learning and understanding hadith through language a
 
 ### Prerequisites
 
+**Required:**
 - Node.js 18+ and npm
+- **Uninterrupted access to https://registry.npmjs.org** (for package installation)
 - Supabase account and project
 - Environment variables configured
+
+**Quick registry check:**
+```bash
+curl -I https://registry.npmjs.org/
+# Expected: HTTP/2 200 or HTTP/1.1 200 OK
+```
+
+⚠️ **Important:** If you get `403 Forbidden` or timeout errors, you must resolve registry access issues before proceeding. See [DEPLOYMENT.md](DEPLOYMENT.md#-critical-npm-registry-access-required) for detailed troubleshooting.
 
 ### Installation
 
@@ -37,6 +47,8 @@ cd Authentic-Hadith
 ```bash
 npm install
 ```
+
+> 💡 **Troubleshooting:** If `npm install` fails with registry errors (403 Forbidden, timeouts, etc.), see the **[NPM Registry Access Required](DEPLOYMENT.md#-critical-npm-registry-access-required)** section in DEPLOYMENT.md for solutions.
 
 3. Set up environment variables:
 ```bash
@@ -102,24 +114,46 @@ npm run build
 npm start
 ```
 
+> ⚠️ **Registry Access Required:** All build commands require access to https://registry.npmjs.org. If builds fail, see [troubleshooting guide](DEPLOYMENT.md#-critical-npm-registry-access-required).
+
 ## Deployment
+
+All deployment platforms require npm registry access during the build phase. See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions and troubleshooting.
 
 ### Deploy to Vercel (Recommended)
 
-1. Push your code to GitHub
-2. Connect your repository to [Vercel](https://vercel.com)
-3. Add environment variables in Vercel project settings
-4. Deploy!
+1. **Verify build works locally:**
+   ```bash
+   npm ci && npm run build
+   ```
+
+2. Push your code to GitHub
+3. Connect your repository to [Vercel](https://vercel.com)
+4. Add environment variables in Vercel project settings
+5. Deploy!
+
+Vercel provides built-in npm registry access - no additional configuration needed.
 
 ### Deploy to Other Platforms
 
 The app can be deployed to any platform that supports Node.js 18+ with Next.js support:
 
-- Netlify
-- Railway
-- AWS Amplify
-- Digital Ocean App Platform
-- Heroku
+- **Railway** - Built-in registry access, auto-detects Next.js
+- **Netlify** - Supports Next.js with registry access
+- **AWS Amplify** - Configure build settings
+- **Digital Ocean App Platform** - Docker or buildpack deployment
+- **Docker** - See [Docker deployment guide](DEPLOYMENT.md#option-4-docker--self-hosted)
+
+**Important:** Before deploying to any platform:
+1. ✅ Verify local build succeeds: `npm ci && npm run build`
+2. ✅ Check GitHub Actions workflow passes (see Actions tab)
+3. ✅ Ensure platform has npm registry access during builds
+
+📚 **See [DEPLOYMENT.md](DEPLOYMENT.md) for:**
+- Platform-specific deployment guides
+- Registry access troubleshooting
+- Docker configuration examples
+- CI/CD setup instructions
 
 ## API Routes
 
@@ -160,6 +194,32 @@ Reports an AI response for quality control.
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+### Before Submitting a PR
+
+1. **Verify registry access:**
+   ```bash
+   curl -I https://registry.npmjs.org/  # Should return 200
+   ```
+
+2. **Test build locally:**
+   ```bash
+   npm ci
+   npm run build
+   npm run lint
+   ```
+
+3. **Check GitHub Actions:**
+   - Ensure "NPM Registry Access Check" workflow passes
+   - View workflow results in the Actions tab
+
+4. **Review checklist:**
+   - [ ] Code builds successfully
+   - [ ] No linting errors
+   - [ ] Changes are documented
+   - [ ] Registry check workflow passes
+
+If the registry check workflow fails, see [DEPLOYMENT.md](DEPLOYMENT.md#-critical-npm-registry-access-required) for troubleshooting before requesting review.
 
 ## License
 

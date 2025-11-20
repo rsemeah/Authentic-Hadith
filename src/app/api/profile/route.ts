@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const { error } = await supabase
     .from('profiles')
     .upsert(
-      { id: user.id, name: name ?? null, language_preference: language_preference || 'en' },
+      { id: user.id, name: name ?? null, language_preference: language_preference || 'en' } as any,
       { onConflict: 'id' },
     );
 

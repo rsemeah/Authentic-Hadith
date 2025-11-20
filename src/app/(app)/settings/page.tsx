@@ -10,6 +10,8 @@ export default async function SettingsPage() {
   if (!user) return null;
 
   const { data: profile } = await supabase.from('profiles').select('name, language_preference').eq('id', user.id).maybeSingle();
+  
+  const profileData = profile as { name?: string; language_preference?: string } | null;
 
   return (
     <div className="space-y-6 py-4">
@@ -19,8 +21,8 @@ export default async function SettingsPage() {
         <p className="text-sm text-neutral-600">Update your profile, export saved hadith, or delete your account.</p>
       </header>
       <SettingsClient initialProfile={{
-        name: profile?.name ?? '',
-        language_preference: profile?.language_preference ?? 'en',
+        name: profileData?.name ?? '',
+        language_preference: profileData?.language_preference ?? 'en',
       }} />
     </div>
   );

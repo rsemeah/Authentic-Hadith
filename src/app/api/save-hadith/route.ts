@@ -20,10 +20,10 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from('saved_hadith')
-    .insert({ user_id: user.id, hadith_id: hadithId })
+    .insert({ user_id: user.id, hadith_id: hadithId } as any)
     .select('id')
     .single();
 
   if (error) return NextResponse.json({ error: 'Unable to save' }, { status: 500 });
-  return NextResponse.json({ savedId: data.id });
+  return NextResponse.json({ savedId: (data as any)?.id });
 }

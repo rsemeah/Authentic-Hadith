@@ -7,6 +7,17 @@ type SearchParams = {
   topic?: string;
 };
 
+type HadithItem = {
+  id: string;
+  collection: string | null;
+  book_number: number | null;
+  hadith_number: number | null;
+  arabic_text: string | null;
+  english_text: string | null;
+  topic_tags: string[] | null;
+  reference: string | null;
+};
+
 export default async function HadithPage({ searchParams }: { searchParams: SearchParams }) {
   const supabase = createServerSupabaseClient();
   const q = searchParams.q?.trim();
@@ -69,7 +80,7 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
       </form>
 
       <section className="space-y-4">
-        {(hadithList || []).map((h) => (
+        {(hadithList || []).map((h: HadithItem) => (
           <article
             key={h.id}
             className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-neutral-100 transition hover:ring-neutral-200"
@@ -80,12 +91,12 @@ export default async function HadithPage({ searchParams }: { searchParams: Searc
                 Book {h.book_number ?? '–'} · Hadith {h.hadith_number ?? '–'}
               </span>
             </div>
-            <div className="arabic mt-3 text-right text-base">{h.arabic_text.slice(0, 180)}…</div>
-            <p className="mt-2 text-sm text-neutral-800">{h.english_text.slice(0, 220)}…</p>
+            <div className="arabic mt-3 text-right text-base">{h.arabic_text?.slice(0, 180) || ''}…</div>
+            <p className="mt-2 text-sm text-neutral-800">{h.english_text?.slice(0, 220) || ''}…</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-neutral-500">
               {h.reference && <span className="rounded-full bg-neutral-100 px-3 py-1">{h.reference}</span>}
               {Array.isArray(h.topic_tags) &&
-                h.topic_tags.slice(0, 3).map((tag) => (
+                h.topic_tags.slice(0, 3).map((tag: string) => (
                   <span key={tag} className="rounded-full bg-neutral-100 px-3 py-1">
                     {tag}
                   </span>
