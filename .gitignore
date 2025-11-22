@@ -8,7 +8,11 @@
 
 # Next.js
 /.next
-/out
+
+# VS Code Extension
+out/
+*.vsix
+.vscode-test/
 
 # Production
 /build
@@ -16,6 +20,7 @@
 # Misc
 .DS_Store
 *.pem
+*.bak
 
 # Debug
 npm-debug.log*

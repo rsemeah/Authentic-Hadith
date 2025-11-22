@@ -1,32 +1,156 @@
 {
-  "name": "authentic-hadith",
+  "name": "authentic-hadith-vscode",
+  "displayName": "Authentic Hadith Assistant",
+  "description": "AI-powered assistant for learning and understanding hadith through interactive VS Code integration",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+  "publisher": "authentic-hadith",
+  "engines": {
+    "vscode": "^1.85.0"
   },
-  "dependencies": {
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/supabase-js": "^2.38.0",
-    "@tailwindcss/postcss": "^4.1.17",
-    "next": "^14.0.0",
-    "openai": "^6.9.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "stripe": "^16.0.0"
+  "categories": [
+    "Education",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "authentic-hadith.startOnboarding",
+        "title": "Start Onboarding",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openDashboard",
+        "title": "Open Dashboard",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openNotes",
+        "title": "Open Notes",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.exportNotesMarkdown",
+        "title": "Export Notes to Markdown",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openBookmarks",
+        "title": "Open Bookmarks",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.toggleBookmark",
+        "title": "Toggle Bookmark",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openSearch",
+        "title": "Open Search",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openTopics",
+        "title": "Browse Topics",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openLearning",
+        "title": "Start Learning",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openReviewQueue",
+        "title": "Open Review Queue",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.recordReview",
+        "title": "Record Review",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.openAssistant",
+        "title": "Open AI Assistant",
+        "category": "Authentic Hadith"
+      },
+      {
+        "command": "authentic-hadith.showSidebar",
+        "title": "Show Sidebar",
+        "category": "Authentic Hadith"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "authentic-hadith-sidebar",
+          "title": "Authentic Hadith",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "authentic-hadith-sidebar": [
+        {
+          "id": "authentic-hadith-sidebar-view",
+          "name": "Hadith Assistant",
+          "type": "webview"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Authentic Hadith",
+      "properties": {
+        "authenticHadith.onboardingCompleted": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the user has completed onboarding"
+        },
+        "authenticHadith.dailyGoal": {
+          "type": "number",
+          "default": 3,
+          "description": "Number of hadiths to learn per day",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "authenticHadith.experienceLevel": {
+          "type": "string",
+          "default": "beginner",
+          "enum": ["beginner", "intermediate", "advanced"],
+          "description": "User's experience level with hadith studies"
+        },
+        "authenticHadith.onboardingGoals": {
+          "type": "array",
+          "default": [],
+          "description": "User's learning goals selected during onboarding",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authenticHadith.studyFrequency": {
+          "type": "string",
+          "default": "daily",
+          "enum": ["daily", "weekly", "flexible"],
+          "description": "How often the user wants to study"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "autoprefixer": "^10.4.22",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.5",
-    "postcss": "^8.4.32",
-    "tailwindcss": "^4.1.17",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
     "typescript": "^5.3.0"
   }
 }
